@@ -1,0 +1,41 @@
+name: Daily Game Reward Claim
+
+on:
+  schedule:
+    - cron: '0 10 * * *'  # Runs at 10:00 AM UTC daily
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  claim-reward:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+    
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install selenium webdriver-manager
+    
+    - name: Run reward claim script
+      run: python daily_reward_script.py
+      
+    - name: Upload screenshots
+      uses: actions/upload-artifact@v3
+      if: always()  # Run even if previous steps failed
+      with:
+        name: screenshots
+        path: |
+          reward_claimed.png
+          error_state.png
+        if-no-files-found: ignore  # Don't fail if no screenshots are generated
